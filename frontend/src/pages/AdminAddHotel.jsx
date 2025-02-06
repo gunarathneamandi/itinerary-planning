@@ -8,7 +8,6 @@ const AdminAddHotel = () => {
     phone: "",
     email: "",
     facilities: "",
-    price: "",
     roomTypes: ["Single", "Double", "Suite"], // Default room types
   });
 
@@ -19,7 +18,7 @@ const AdminAddHotel = () => {
     setHotel({ ...hotel, [e.target.name]: e.target.value });
   };
 
-  const handleRoomTypeChange = (index, field, value) => {
+  const handleRoomTypeChange = (index, value) => {
     const updatedRoomTypes = [...hotel.roomTypes];
     updatedRoomTypes[index] = value; // Update the room type at the specific index
     setHotel({ ...hotel, roomTypes: updatedRoomTypes });
@@ -56,6 +55,8 @@ const AdminAddHotel = () => {
         body: JSON.stringify(formattedHotel),
       });
 
+      console.log(response);
+      
       const data = await response.json();
       if (response.ok) {
         setMessage("Hotel added successfully!");
@@ -66,7 +67,6 @@ const AdminAddHotel = () => {
           phone: "",
           email: "",
           facilities: "",
-          price: "",
           roomTypes: ["Single", "Double", "Suite"], // Reset room types to default
         });
       } else {
@@ -138,17 +138,6 @@ const AdminAddHotel = () => {
           className="w-full p-2 border rounded"
         ></textarea>
 
-        <input
-          type="number"
-          name="price"
-          value={hotel.price}
-          onChange={handleChange}
-          placeholder="Price for the Hotel"
-          min="0"
-          required
-          className="w-full p-2 border rounded"
-        />
-
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Room Types</h3>
           {hotel.roomTypes.map((room, index) => (
@@ -157,7 +146,7 @@ const AdminAddHotel = () => {
               <input
                 type="text"
                 value={room}
-                onChange={(e) => handleRoomTypeChange(index, "type", e.target.value)}
+                onChange={(e) => handleRoomTypeChange(index, e.target.value)}
                 className="p-2 border rounded w-full mb-2"
                 required
               />

@@ -4,7 +4,7 @@ import ShowAttractions from "./pages/ShowAttractions";
 import HomePage from "./pages/HomePage";
 import BookingPage from "./pages/BookingPage";
 import BookingDetailsPage from "./pages/BookingDetailsPage";
-import AdminAddHotel from "./pages/HotelAdding";
+import AdminAddHotel from "./pages/AdminAddHotel";
 import AdminAddAttraction from "./pages/AdminAddAttraction"; 
 import AdminViewAttraction from "./pages/AdminViewAttraction";
 import SitesPage from "./pages/SitesPage";
@@ -26,7 +26,7 @@ const App = () => {
 
 
       <Route path="/showsite" element={<SiteFound/>}/>
-      <Route path="/hotelview" elemen={<HotelsPage/>}/>
+      <Route path="/hotelview" element={<HotelsPage/>}/>
     </Routes>
   );
 };
