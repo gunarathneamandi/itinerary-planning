@@ -21,7 +21,7 @@ const AdminViewAttractions = () => {
   }, []);
 
   const handleAddAttraction = () => {
-    navigate("/admin/add-attraction");
+    navigate("/admin/addattraction");
   };
 
   return (
