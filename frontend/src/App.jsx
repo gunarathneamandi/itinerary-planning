@@ -8,6 +8,7 @@ import AdminAddHotel from "./pages/HotelAdding";
 import AdminAddAttraction from "./pages/AdminAddAttraction"; 
 import AdminViewAttraction from "./pages/AdminViewAttraction";
 import SiteFound from "./pages/SiteFound";
+import HotelsPage from "./pages/HotelsPage";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
       <Route path="/admin/addattraction" element={<AdminAddAttraction />} />
       <Route path="/admin/viewattraction" element={<AdminViewAttraction />} />
       <Route path="/showsite" element={<SiteFound/>}/>
+      <Route path="/hotelview" elemen={<HotelsPage/>}/>
     </Routes>
   );
 };
