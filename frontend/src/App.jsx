@@ -6,6 +6,7 @@ import BookingPage from "./pages/BookingPage";
 import BookingDetailsPage from "./pages/BookingDetailsPage";
 import AdminAddHotel from "./pages/HotelAdding";
 import AdminAddAttraction from "./pages/AdminAddAttraction"; 
+import AdminViewAttraction from "./pages/AdminViewAttraction";
 
 const App = () => {
   return (
@@ -16,7 +17,7 @@ const App = () => {
       <Route path="/bookingConfirmation/:bookingId" element={<BookingDetailsPage />} />
       <Route path="/admin/addhotel" element={<AdminAddHotel />} /> 
       <Route path="/admin/addattraction" element={<AdminAddAttraction />} />
-
+      <Route path="/admin/viewattraction" element={<AdminViewAttraction />} />
 
     </Routes>
   );
