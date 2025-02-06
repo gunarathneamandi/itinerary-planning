@@ -8,13 +8,12 @@ const AdminAddHotel = () => {
     phone: "",
     email: "",
     facilities: "",
-    roomTypes: [],
+    price: "",
+    roomTypes: ["Single", "Double", "Suite"], // Default room types
   });
 
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
-
-  const availableRoomTypes = ["Single", "Double", "Family", "Suite"];
 
   const handleChange = (e) => {
     setHotel({ ...hotel, [e.target.name]: e.target.value });
@@ -22,14 +21,14 @@ const AdminAddHotel = () => {
 
   const handleRoomTypeChange = (index, field, value) => {
     const updatedRoomTypes = [...hotel.roomTypes];
-    updatedRoomTypes[index][field] = field === "count" || field === "price" ? parseFloat(value) : value;
+    updatedRoomTypes[index] = value; // Update the room type at the specific index
     setHotel({ ...hotel, roomTypes: updatedRoomTypes });
   };
 
   const addRoomType = () => {
     setHotel({
       ...hotel,
-      roomTypes: [...hotel.roomTypes, { type: "Single", count: 1, price: 0 }],
+      roomTypes: [...hotel.roomTypes, ""], // Add an empty room type as a default
     });
   };
 
@@ -49,7 +48,7 @@ const AdminAddHotel = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/hotels", {
+      const response = await fetch("http://localhost:5555/booking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +66,8 @@ const AdminAddHotel = () => {
           phone: "",
           email: "",
           facilities: "",
-          roomTypes: [],
+          price: "",
+          roomTypes: ["Single", "Double", "Suite"], // Reset room types to default
         });
       } else {
         setError(data.message || "Failed to add hotel.");
@@ -83,61 +83,106 @@ const AdminAddHotel = () => {
       {message && <p className="text-green-600">{message}</p>}
       {error && <p className="text-red-600">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" name="name" value={hotel.name} onChange={handleChange} placeholder="Hotel Name" required className="w-full p-2 border rounded" />
-        <input type="text" name="address" value={hotel.address} onChange={handleChange} placeholder="Address" required className="w-full p-2 border rounded" />
-        <input type="text" name="city" value={hotel.city} onChange={handleChange} placeholder="City" required className="w-full p-2 border rounded" />
-        <input type="text" name="phone" value={hotel.phone} onChange={handleChange} placeholder="Phone Number (10 digits)" pattern="[0-9]{10}" required className="w-full p-2 border rounded" />
-        <input type="email" name="email" value={hotel.email} onChange={handleChange} placeholder="Email" required className="w-full p-2 border rounded" />
-        <textarea name="facilities" value={hotel.facilities} onChange={handleChange} placeholder="Facilities (comma-separated, e.g., Wi-Fi, Pool)" required className="w-full p-2 border rounded"></textarea>
+        <input
+          type="text"
+          name="name"
+          value={hotel.name}
+          onChange={handleChange}
+          placeholder="Hotel Name"
+          required
+          className="w-full p-2 border rounded"
+        />
+        <input
+          type="text"
+          name="address"
+          value={hotel.address}
+          onChange={handleChange}
+          placeholder="Address"
+          required
+          className="w-full p-2 border rounded"
+        />
+        <input
+          type="text"
+          name="city"
+          value={hotel.city}
+          onChange={handleChange}
+          placeholder="City"
+          required
+          className="w-full p-2 border rounded"
+        />
+        <input
+          type="text"
+          name="phone"
+          value={hotel.phone}
+          onChange={handleChange}
+          placeholder="Phone Number (10 digits)"
+          pattern="[0-9]{10}"
+          required
+          className="w-full p-2 border rounded"
+        />
+        <input
+          type="email"
+          name="email"
+          value={hotel.email}
+          onChange={handleChange}
+          placeholder="Email"
+          required
+          className="w-full p-2 border rounded"
+        />
+        <textarea
+          name="facilities"
+          value={hotel.facilities}
+          onChange={handleChange}
+          placeholder="Facilities (comma-separated, e.g., Wi-Fi, Pool)"
+          required
+          className="w-full p-2 border rounded"
+        ></textarea>
+
+        <input
+          type="number"
+          name="price"
+          value={hotel.price}
+          onChange={handleChange}
+          placeholder="Price for the Hotel"
+          min="0"
+          required
+          className="w-full p-2 border rounded"
+        />
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Room Types</h3>
           {hotel.roomTypes.map((room, index) => (
             <div key={index} className="border p-4 rounded shadow-sm">
               <label className="block text-sm font-semibold mb-1">Room Type</label>
-              <select
-                value={room.type}
+              <input
+                type="text"
+                value={room}
                 onChange={(e) => handleRoomTypeChange(index, "type", e.target.value)}
                 className="p-2 border rounded w-full mb-2"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => removeRoomType(index)}
+                className="bg-red-500 text-white px-2 py-1 rounded"
               >
-                {availableRoomTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-
-              <label className="block text-sm font-semibold mb-1">Number of Rooms</label>
-              <input
-                type="number"
-                min="1"
-                value={room.count}
-                onChange={(e) => handleRoomTypeChange(index, "count", e.target.value)}
-                placeholder="No. of Rooms"
-                className="p-2 border rounded w-full mb-2"
-              />
-
-              <label className="block text-sm font-semibold mb-1">Price per Night</label>
-              <input
-                type="number"
-                min="0"
-                value={room.price}
-                onChange={(e) => handleRoomTypeChange(index, "price", e.target.value)}
-                placeholder="Price per Night"
-                className="p-2 border rounded w-full mb-2"
-              />
-
-              <button type="button" onClick={() => removeRoomType(index)} className="bg-red-500 text-white px-2 py-1 rounded">
-                ✕ Remove
+                ✕ Remove Room Type
               </button>
             </div>
           ))}
-          <button type="button" onClick={addRoomType} className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">
+          <button
+            type="button"
+            onClick={addRoomType}
+            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+          >
             + Add Room Type
           </button>
         </div>
 
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
           Add Hotel
         </button>
       </form>
