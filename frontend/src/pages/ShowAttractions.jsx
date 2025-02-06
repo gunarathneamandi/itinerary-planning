@@ -10,6 +10,8 @@ const ShowAttractions = () => {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const [startingLocation, setStartingLocation] = useState("");
+  const [showLocationModal, setShowLocationModal] = useState(false); // To manage location input modal
   const navigate = useNavigate();
   const keys = ["name", "category", "location"];
 
@@ -54,6 +56,24 @@ const ShowAttractions = () => {
       }, {});
       setWeatherData(weatherMap);
     });
+  };
+
+  const handleViewDetails = (attractionId) => {
+    if (!startingLocation) {
+      // If starting location is not set, show modal to input it
+      setShowLocationModal(true);
+    } else {
+      // Navigate with starting location already available
+      navigate(`/details/${attractionId}?start=${startingLocation}`);
+    }
+  };
+
+  const handleLocationSubmit = () => {
+    if (startingLocation) {
+      // Close the modal and navigate with the starting location
+      setShowLocationModal(false);
+      navigate(`/details/${attraction._id}?start=${startingLocation}`);
+    }
   };
 
   return (
@@ -108,17 +128,23 @@ const ShowAttractions = () => {
                 className="bg-white shadow-lg rounded-lg p-4 flex flex-col justify-between transform hover:scale-105 transition duration-300 ease-in-out"
               >
                 <div className="flex flex-col">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">{attraction.name}</h2>
-                  <p className="text-gray-600 text-sm mb-2">{attraction.description}</p>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                    {attraction.name}
+                  </h2>
+                  <p className="text-gray-600 text-sm mb-2">
+                    {attraction.description}
+                  </p>
                   <p className="text-gray-500 text-sm mb-1">
                     <strong>Category:</strong> {attraction.category}
                   </p>
                   <p className="text-gray-500 text-sm mb-1">
                     <strong>Location:</strong> {attraction.location}
                   </p>
-                  <p className="text-gray-500 text-sm mb-3">
-                    <strong>Entry Fee:</strong> ${attraction.entryFee}
+                  <p className="text-gray-500 text-sm mb-1">
+                    <strong>Address:</strong> {attraction.address}{" "}
+                    {/* Displaying the real address */}
                   </p>
+
                   <div className="flex items-center text-sm text-gray-500 mb-4">
                     {weatherData[attraction._id] ? (
                       <>
@@ -134,7 +160,7 @@ const ShowAttractions = () => {
                 </div>
                 <div className="mt-4 flex justify-end">
                   <button
-                    onClick={() => navigate(`/details/${attraction._id}`)}
+                    onClick={() => handleViewDetails(attraction._id)}
                     className="bg-blue-700 text-white py-2 px-6 rounded-lg hover:bg-blue-800 transition duration-300"
                   >
                     View Details
@@ -144,6 +170,36 @@ const ShowAttractions = () => {
             ))
         )}
       </div>
+
+      {/* Location input modal */}
+      {showLocationModal && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-lg w-80">
+            <h3 className="text-lg font-semibold mb-4">Enter Your Starting Location</h3>
+            <input
+              type="text"
+              placeholder="Starting Location"
+              className="w-full border rounded-md p-3 text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={startingLocation}
+              onChange={(e) => setStartingLocation(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handleLocationSubmit}
+                className="bg-blue-700 text-white py-2 px-6 rounded-lg hover:bg-blue-800 transition duration-300"
+              >
+                Submit
+              </button>
+              <button
+                onClick={() => setShowLocationModal(false)}
+                className="ml-4 bg-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 transition duration-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

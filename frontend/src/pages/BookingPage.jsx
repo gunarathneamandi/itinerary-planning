@@ -4,7 +4,6 @@ import axios from "axios";
 import useUserDetails from "../hooks/useUserDetails"; // Import the custom hook
 import UserDetailsForm from "../components/UserDetailsForms.jsx"; // Import the UserDetailsForm component
 
-
 const BookingPage = () => {
   const { attractionId } = useParams();
   
@@ -12,26 +11,24 @@ const BookingPage = () => {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedHotel, setSelectedHotel] = useState(null);
-  const [selectedMeals, setSelectedMeals] = useState([]);
-  const [selectedTransport, setSelectedTransport] = useState("");
+  const [selectedRooms, setSelectedRooms] = useState([]);
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
-  const [bookingDate] = useState(new Date().toISOString().split("T")[0]);
-  
+  const [hotelDistances, setHotelDistances] = useState([]); // To store calculated distances
 
   const navigate = useNavigate();
 
   // Use the custom hook for user details
   const { userDetails, handleInputChange } = useUserDetails();
 
-  // Prices for meals and transport
-  const mealPrices = { Breakfast: 1000, Lunch: 2000, Dinner: 3000 };
-  const transportPrices = { Bike: 500, Car: 1000, "Tuk Tuk": 700 };
-
-  
-
+  // Prices for rooms
+  const roomPrices = {
+    Single: 1000,
+    Double: 1500,
+    Suite: 2500
+  };
 
   useEffect(() => {
     const fetchAttractionAndHotels = async () => {
@@ -55,40 +52,106 @@ const BookingPage = () => {
     fetchAttractionAndHotels();
   }, [attractionId]);
 
-  // Handle meal selection
-  const handleMealChange = (meal) => {
-    setSelectedMeals((prev) =>
-      prev.includes(meal) ? prev.filter((m) => m !== meal) : [...prev, meal]
-    );
+  useEffect(() => {
+    const getHotelDistances = async () => {
+      if (attraction && hotels.length > 0) {
+        // Geocode the attraction address
+        const attractionLocation = await geocodeAddress(attraction.address);
+
+        // Calculate distances for each hotel
+        const distances = await Promise.all(
+          hotels.map(async (hotel) => {
+            const hotelLocation = await geocodeAddress(hotel.address);
+            if (hotelLocation) {
+              const distance = await getDistance(hotelLocation, attractionLocation);
+              return { hotel, distance };
+            }
+            return null;
+          })
+        );
+
+        // Filter out any null results and sort by distance
+        const validDistances = distances.filter((item) => item !== null);
+        validDistances.sort((a, b) => a.distance - b.distance);
+        setHotelDistances(validDistances);
+      }
+    };
+
+    getHotelDistances();
+  }, [attraction, hotels]);
+
+  // Geocode address to get lat and lon
+  const geocodeAddress = async (address) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
+      const { lat, lon } = response.data[0];
+      return { lat: parseFloat(lat), lon: parseFloat(lon) };
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      return null;
+    }
   };
 
-  // Handle transport selection
-  const handleTransportChange = (e) => {
-    setSelectedTransport(e.target.value);
+  // Calculate distance using OSRM
+  const getDistance = async (hotelLocation, attractionLocation) => {
+    try {
+      const response = await axios.get(
+        `https://router.project-osrm.org/route/v1/driving/${hotelLocation.lon},${hotelLocation.lat};${attractionLocation.lon},${attractionLocation.lat}?overview=false&steps=true`
+      );
+      if (response.data.code === "Ok") {
+        const distance = response.data.routes[0].legs[0].distance / 1000; // Convert to km
+        return distance;
+      }
+      return 0;
+    } catch (error) {
+      console.error("Error calculating distance:", error);
+      return 0;
+    }
+  };
+
+  // Handle room selection for a hotel
+  const handleRoomChange = (hotelId, roomType, count) => {
+    setSelectedRooms((prev) => {
+      const existingHotel = prev.find((hotel) => hotel.hotelId === hotelId);
+      if (existingHotel) {
+        const existingRoom = existingHotel.rooms.find(
+          (room) => room.type === roomType
+        );
+        if (existingRoom) {
+          existingRoom.count = count;
+        } else {
+          existingHotel.rooms.push({ type: roomType, count });
+        }
+      } else {
+        prev.push({ hotelId, rooms: [{ type: roomType, count }] });
+      }
+      return [...prev];
+    });
   };
 
   // Calculate total price
   const calculateTotalPrice = () => {
-    let mealTotal = selectedMeals.reduce(
-      (total, meal) => total + mealPrices[meal],
-      0
-    );
-    let transportTotal = transportPrices[selectedTransport] || 0;
-    let hotelTotal = selectedHotel
-      ? hotels.find((hotel) => hotel.name === selectedHotel)?.price || 0
-      : 0;
+    let roomTotal = selectedRooms.reduce((total, hotel) => {
+      hotel.rooms.forEach(
+        (room) => (total += room.count * roomPrices[room.type])
+      );
+      return total;
+    }, 0);
 
-    let total = mealTotal + transportTotal + hotelTotal - discount;
+    let hotelTotal = selectedHotel ? selectedHotel.price : 0;
+    let total = roomTotal + hotelTotal - discount;
     setTotalPrice(total);
   };
 
   useEffect(() => {
     calculateTotalPrice();
-  }, [selectedMeals, selectedTransport, selectedHotel, discount]);
+  }, [selectedRooms, selectedHotel, discount]);
 
   const handleBooking = async (e) => {
     e.preventDefault();
-  
+
     if (
       !selectedHotel._id ||
       !checkInDate ||
@@ -101,12 +164,11 @@ const BookingPage = () => {
       alert("Please complete all fields before booking.");
       return;
     }
-  
+
     const bookingDetails = {
       attraction: attractionId,
       hotel: selectedHotel._id,
-      meals: selectedMeals,
-      transport: selectedTransport,
+      rooms: selectedRooms,
       checkInDate,
       checkOutDate,
       name: userDetails.name,
@@ -115,50 +177,35 @@ const BookingPage = () => {
       address: userDetails.address,
       totalPrice: Number(totalPrice),
     };
-  
-    console.log(bookingDetails);
-  
+
     try {
       const response = await axios.post(
         "http://localhost:5555/bookingConfirmation",
         bookingDetails
       );
 
-      console.log(response.data);
-
       if (response.data && response.data._id) {
         alert("Booking Success!");
-        console.log(bookingDetails)
-        // Redirect to the booking details page
-       // navigate(`/bookingConfirmation/${response.data.bookingId}`);  // assuming the booking ID is returned from the server
-       console.log("Booking ID:", response.data._id); 
-       navigate(`/bookingConfirmation/${response.data._id}`);
+        navigate(`/bookingConfirmation/${response.data._id}`);
       } else {
         alert("There was an issue with your booking. Please try again.");
       }
     } catch (error) {
       console.error("Error posting booking details:", error);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-        alert(
-          `Booking failed. Server Error: ${error.response.status}. Check the console for details.`
-        );
-      } else if (error.request) {
-        console.error("Request data:", error.request);
-        alert(
-          "Booking failed. No response from the server. Check the console for details."
-        );
-      } else {
-        console.error("Error message:", error.message);
-        alert(
-          "Booking failed. Request setup error. Check the console for details."
-        );
-      }
+      alert("Booking failed. Please try again.");
     }
   };
-  
+
+  // Date validation for check-out to be after check-in
+  const handleCheckInDateChange = (e) => {
+    const newCheckInDate = e.target.value;
+    setCheckInDate(newCheckInDate);
+
+    // Set the check-out date to always be after check-in
+    if (!checkOutDate || newCheckInDate >= checkOutDate) {
+      setCheckOutDate(newCheckInDate);
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -170,13 +217,12 @@ const BookingPage = () => {
 
   return (
     <form onSubmit={handleBooking} className="p-8">
-      {/* Display Attraction Details */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold">{attraction.name}</h1>
         <p className="text-gray-700">{attraction.description}</p>
         <p className="text-gray-600">Category: {attraction.category}</p>
         <p className="text-gray-600">Location: {attraction.location}</p>
-        <p className="text-gray-600">Entry Fee: {attraction.entryFee}</p>
+        <p className="text-gray-600">Address: {attraction.address}</p>
         {attraction.photos && attraction.photos.length > 0 && (
           <div className="grid grid-cols-2 gap-4 mt-4">
             {attraction.photos.map((photo, index) => (
@@ -198,88 +244,68 @@ const BookingPage = () => {
           <input
             type="date"
             value={checkInDate}
-            onChange={(e) => setCheckInDate(e.target.value)}
-            className="border p-2 rounded-md w-full"
+            onChange={handleCheckInDateChange}
             required
-            min={bookingDate}
+            className="border-2 p-2 w-full"
           />
           <input
             type="date"
             value={checkOutDate}
             onChange={(e) => setCheckOutDate(e.target.value)}
-            className="border p-2 rounded-md w-full"
             required
             min={checkInDate}
+            className="border-2 p-2 w-full"
           />
         </div>
       </div>
 
-      {/* Display Hotels */}
+      {/* Hotels with Room Selection Inside */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Hotels Nearby</h2>
-        {hotels.length === 0 ? (
-          <p>No hotels found in this location.</p>
-        ) : (
-          <ul className="space-y-4">
-            {hotels.map((hotel) => (
-              <li
-                key={hotel._id}
-                className={`... ${
-                  selectedHotel && selectedHotel._id === hotel._id
-                    ? "bg-blue-100"
-                    : ""
-                }`}
-                onClick={() => setSelectedHotel(hotel)}
-              >
-                <h3 className="text-lg font-semibold">{hotel.name}</h3>
-                <p>{hotel.address}</p>
-                <p>City: {hotel.city}</p>
-                <p>Price: {hotel.price}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+        <h2 className="text-xl font-bold mb-4">Choose a Hotel</h2>
+        <div className="space-y-4">
+          {hotelDistances.map(({ hotel, distance }) => (
+            <div
+              key={hotel._id}
+              className={`border-2 p-4 rounded-md cursor-pointer ${
+                selectedHotel && selectedHotel._id === hotel._id
+                  ? "bg-blue-200"
+                  : ""
+              }`}
+              onClick={() => setSelectedHotel(hotel)}
+            >
+              <h3 className="text-lg font-semibold">{hotel.name}</h3>
+              <p className="text-gray-600">Distance: {distance.toFixed(2)} km</p>
+              <p className="text-gray-700">{hotel.address}</p>
+              <p className="text-gray-600">Price per night: {hotel.price}</p>
 
-      {/* Meal Selection */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Select Meals</h2>
-        <div className="space-y-2">
-          {["Breakfast", "Lunch", "Dinner"].map((meal) => (
-            <div key={meal}>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value={meal}
-                  checked={selectedMeals.includes(meal)}
-                  onChange={() => handleMealChange(meal)}
-                />
-                <span>{meal}</span>
-                <span>- {mealPrices[meal]} LKR</span>
-              </label>
+              {/* Room selection for the hotel */}
+              <div className="mt-4">
+                {["Single", "Double", "Suite"].map((roomType) => (
+                  <div key={roomType} className="flex items-center mb-4">
+                    <label className="mr-4">{roomType}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="5"
+                      value={
+                        selectedRooms.find(
+                          (room) => room.hotelId === hotel._id && room.type === roomType
+                        )?.count || 0
+                      }
+                      onChange={(e) =>
+                        handleRoomChange(hotel._id, roomType, Number(e.target.value))
+                      }
+                      className="border-2 p-2 w-20"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Transport Selection */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Select Transport</h2>
-        <select
-          value={selectedTransport}
-          onChange={handleTransportChange}
-          className="border p-2 rounded-md w-full"
-        >
-          <option value="">Choose transport type</option>
-          {["Bike", "Car", "Tuk Tuk"].map((option) => (
-            <option key={option} value={option}>
-              {option} - {transportPrices[option]} LKR
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* User Details Form */}
+      {/* User Details */}
       <UserDetailsForm
         userDetails={userDetails}
         handleInputChange={handleInputChange}
@@ -287,16 +313,18 @@ const BookingPage = () => {
 
       {/* Total Price */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Total Price</h2>
-        <p>Total: {totalPrice} LKR</p>
+        <h2 className="text-xl font-bold mb-4">Total Price: {totalPrice}</h2>
       </div>
 
-      <button
-        type="submit"
-        className="bg-blue-500 text-white p-4 rounded-md w-full mt-8"
-      >
-        Book Now
-      </button>
+      {/* Booking Button */}
+      <div className="mb-8">
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-4 rounded-md w-full"
+        >
+          Confirm Booking
+        </button>
+      </div>
     </form>
   );
 };

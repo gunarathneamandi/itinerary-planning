@@ -21,7 +21,8 @@ router.post("/", upload.array("photos", 5), async (request, response) => {
       !request.body.description ||
       !request.body.location ||
       !request.body.category ||
-      !request.body.entryFee
+      !request.body.entryFee ||
+      !request.body.address // Check if address is provided
     ) {
       return response.status(400).send({
         message: "Send all required fields",
@@ -34,6 +35,7 @@ router.post("/", upload.array("photos", 5), async (request, response) => {
       category: request.body.category,
       location: request.body.location,
       entryFee: request.body.entryFee,
+      address: request.body.address, // Save address as a single string
       photos: request.files.map((file) => `/images/${file.filename}`), // Save image paths
     };
 
