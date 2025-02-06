@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Site = require('./Site');  // Import Site model
+import mongoose from 'mongoose';
+import Site from '../models/siteModel.js';  // Import Site model
 
 // Route schema
 const routeSchema = new mongoose.Schema({
@@ -10,4 +10,4 @@ const routeSchema = new mongoose.Schema({
 
 const Route = mongoose.model('Route', routeSchema);
 
-module.exports = Route;
+export default Route;

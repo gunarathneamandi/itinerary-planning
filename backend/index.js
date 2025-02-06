@@ -8,6 +8,7 @@ import attractionsRoute from "./routes/attractionsRoute.js";
 import bookingRoute from "./routes/bookingRoute.js";
 import bookingConfirmation from "./routes/bookingConfirmationRoute.js";
 import siteRoutes from "./routes/siteRoutes.js";
+import routeRoutes from "./routes/routeRoutes.js";
 import cors from "cors";
 import axios from "axios";
 
@@ -35,6 +36,7 @@ app.use("/attractions", attractionsRoute);
 app.use("/booking", bookingRoute);
 app.use("/bookingConfirmation", bookingConfirmation);
 app.use("/sites", siteRoutes);
+app.use("/routes", routeRoutes);
 
 // Serve static images from public/images folder
 app.use("/images", express.static("public/images"));

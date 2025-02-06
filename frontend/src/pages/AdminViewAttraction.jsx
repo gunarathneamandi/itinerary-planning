@@ -10,7 +10,7 @@ const AdminViewAttractions = () => {
   useEffect(() => {
     const fetchAttractions = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/attractions");
+        const response = await axios.get("http://localhost:5555/attractions");
         setAttractions(response.data.data);
       } catch (error) {
         setError("Error fetching attractions.");

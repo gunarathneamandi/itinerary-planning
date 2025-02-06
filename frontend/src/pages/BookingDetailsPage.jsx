@@ -141,8 +141,7 @@ const BookingDetailsPage = () => {
   const {
     attraction,
     hotel,
-    meals,
-    transport,
+
     checkInDate,
     checkOutDate,
     name,
@@ -162,7 +161,6 @@ const BookingDetailsPage = () => {
         <p className="text-gray-700">{attraction.name}</p>
         <p className="text-gray-600">{attraction.description}</p>
         <p className="text-gray-600">Location: {attraction.location}</p>
-        <p className="text-gray-600">Entry Fee: {attraction.entryFee}</p>
       </div>
 
       {/* Hotel Details */}
@@ -171,45 +169,6 @@ const BookingDetailsPage = () => {
         <p className="text-gray-700">{hotel.name}</p>
         <p className="text-gray-600">{hotel.address}</p>
         <p className="text-gray-600">Price: {hotel.price} LKR</p>
-      </div>
-
-      {/* Meals */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Meals</h2>
-        <ul className="space-y-2">
-          {meals.length === 0 ? (
-            <p>No meals selected.</p>
-          ) : (
-            meals.map((meal) => (
-              <li key={meal} className="text-gray-700">
-                {meal} -{" "}
-                {meal === "Breakfast"
-                  ? "1000"
-                  : meal === "Lunch"
-                  ? "2000"
-                  : "3000"}{" "}
-                LKR
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
-
-      {/* Transport */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Transport</h2>
-        <p className="text-gray-700">
-          {transport} -{" "}
-          {transport === "Bike" ? "500" : transport === "Car" ? "1000" : "700"}{" "}
-          LKR
-        </p>
-      </div>
-
-      {/* Dates */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Dates</h2>
-        <p className="text-gray-700">Check-in Date: {checkInDate}</p>
-        <p className="text-gray-700">Check-out Date: {checkOutDate}</p>
       </div>
 
       {/* User Details */}
@@ -238,7 +197,7 @@ const BookingDetailsPage = () => {
       )}
 
       {/* Map */}
-      <div id="map" style={{ height: "400px", width: "100%" }}></div>
+      <div id="map" style={{ height: "300px", width: "300px", marginBottom: "20px" }}></div>
 
       {/* Buttons */}
       <div className="flex gap-4">

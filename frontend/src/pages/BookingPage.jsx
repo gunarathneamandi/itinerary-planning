@@ -6,7 +6,7 @@ import UserDetailsForm from "../components/UserDetailsForms.jsx"; // Import the 
 
 const BookingPage = () => {
   const { attractionId } = useParams();
-  
+
   const [attraction, setAttraction] = useState(null);
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +17,7 @@ const BookingPage = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [hotelDistances, setHotelDistances] = useState([]); // To store calculated distances
+  const [startingLocation, setStartingLocation] = useState(""); // New state for starting location
 
   const navigate = useNavigate();
 
@@ -27,7 +28,7 @@ const BookingPage = () => {
   const roomPrices = {
     Single: 1000,
     Double: 1500,
-    Suite: 2500
+    Suite: 2500,
   };
 
   useEffect(() => {
@@ -63,7 +64,10 @@ const BookingPage = () => {
           hotels.map(async (hotel) => {
             const hotelLocation = await geocodeAddress(hotel.address);
             if (hotelLocation) {
-              const distance = await getDistance(hotelLocation, attractionLocation);
+              const distance = await getDistance(
+                hotelLocation,
+                attractionLocation
+              );
               return { hotel, distance };
             }
             return null;
@@ -84,7 +88,9 @@ const BookingPage = () => {
   const geocodeAddress = async (address) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          address
+        )}`
       );
       const { lat, lon } = response.data[0];
       return { lat: parseFloat(lat), lon: parseFloat(lon) };
@@ -175,6 +181,7 @@ const BookingPage = () => {
       email: userDetails.email,
       contact: userDetails.contact,
       address: userDetails.address,
+      startingLocation,
       totalPrice: Number(totalPrice),
     };
 
@@ -217,6 +224,19 @@ const BookingPage = () => {
 
   return (
     <form onSubmit={handleBooking} className="p-8">
+      {/* Starting Location */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Enter Starting Location</h2>
+        <input
+          type="text"
+          value={startingLocation}
+          onChange={(e) => setStartingLocation(e.target.value)}
+          placeholder="Enter your starting location"
+          required
+          className="border-2 p-2 w-full"
+        />
+      </div>
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold">{attraction.name}</h1>
         <p className="text-gray-700">{attraction.description}</p>
@@ -295,7 +315,7 @@ const BookingPage = () => {
                       onChange={(e) =>
                         handleRoomChange(hotel._id, roomType, Number(e.target.value))
                       }
-                      className="border-2 p-2 w-20"
+                      className="border-2 p-2 w-16"
                     />
                   </div>
                 ))}
@@ -306,25 +326,25 @@ const BookingPage = () => {
       </div>
 
       {/* User Details */}
-      <UserDetailsForm
-        userDetails={userDetails}
-        handleInputChange={handleInputChange}
-      />
-
-      {/* Total Price */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Total Price: {totalPrice}</h2>
+        <h2 className="text-xl font-bold mb-4">Enter Your Details</h2>
+        <UserDetailsForm
+          userDetails={userDetails}
+          handleInputChange={handleInputChange}
+        />
       </div>
 
-      {/* Booking Button */}
+      {/* Summary and Confirm */}
       <div className="mb-8">
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-4 rounded-md w-full"
-        >
-          Confirm Booking
-        </button>
+        <h2 className="text-xl font-bold mb-4">Booking Summary</h2>
+        <p className="text-gray-600">
+          Total Price: {totalPrice.toFixed(2)}
+        </p>
       </div>
+
+      <button type="submit" className="btn bg-blue-500 text-white w-full py-3">
+        Confirm Booking
+      </button>
     </form>
   );
 };

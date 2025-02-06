@@ -40,7 +40,7 @@ const AdminAddAttraction = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/attractions", formData, {
+      const response = await axios.post("http://localhost:5555/attractions", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

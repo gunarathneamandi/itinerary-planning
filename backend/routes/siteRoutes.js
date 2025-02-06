@@ -1,10 +1,28 @@
 import express from "express";
-import Site from "../models/siteModel.js"; // Import the Site model using ES6 import
+import multer from "multer"; // Middleware to handle form-data
+import Site from "../models/siteModel.js";
+
 const router = express.Router();
 
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images"); // Set folder to save files
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); // Ensure unique filenames
+  },
+});
+const upload = multer({ storage });
+
 // Add a new site
-router.post("/", async (req, res) => {
-  const { name, address, activities, description, images } = req.body;
+router.post("/", upload.single("images"), async (req, res) => {
+  const { name, address, activities, description } = req.body;
+
+  // Check required fields
+  if (!name || !address) {
+    return res.status(400).json({ message: "Name and address are required" });
+  }
 
   try {
     const newSite = new Site({
@@ -12,7 +30,7 @@ router.post("/", async (req, res) => {
       address,
       activities,
       description,
-      images,
+      images: req.file ? req.file.path : null, // Use uploaded file path
     });
 
     // Save the new site to the database
@@ -59,4 +77,4 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-export default router; // Export the router with ES6 export
+export default router;

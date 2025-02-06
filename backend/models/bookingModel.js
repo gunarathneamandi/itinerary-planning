@@ -28,19 +28,19 @@ const bookingSchema = new Schema(
       required: false, // Check-out date is optional
     },
 
-    // Selected meals (breakfast, lunch, dinner)
-    meals: {
-      type: [String],
-      enum: ["Breakfast", "Lunch", "Dinner"], // Restrict options
-      required: false,
-    },
-    // Selected transport mode
-    transport: {
-      type: String,
-      enum: ["Bike", "Car", "Tuk Tuk"], // Restrict options
-      required: false,
-    },
-    // User details
+    // // Selected meals (breakfast, lunch, dinner)
+    // meals: {
+    //   type: [String],
+    //   enum: ["Breakfast", "Lunch", "Dinner"], // Restrict options
+    //   required: false,
+    // },
+    // // Selected transport mode
+    // transport: {
+    //   type: String,
+    //   enum: ["Bike", "Car", "Tuk Tuk"], // Restrict options
+    //   required: false,
+    // },
+    // // User details
 
     name: {
       type: String,
@@ -63,6 +63,7 @@ const bookingSchema = new Schema(
     totalPrice: {
       type: Number,
       required: true,
+      default: 1000,
       min: 0,
     },
     // Timestamp for booking date
