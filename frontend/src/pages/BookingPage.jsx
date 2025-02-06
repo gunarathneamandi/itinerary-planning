@@ -18,6 +18,10 @@ const BookingPage = () => {
   const [discount, setDiscount] = useState(0);
   const [hotelDistances, setHotelDistances] = useState([]); // To store calculated distances
   const [startingLocation, setStartingLocation] = useState(""); // New state for starting location
+  const [matchingRoutes, setMatchingRoutes] = useState([]); // Stores matched routes
+  const [matchingSites, setMatchingSites] = useState([]); // Stores matched site IDs
+  const [showSites, setShowSites] = useState(false); // Controls visibility of sites
+  const [selectedSites, setSelectedSites] = useState([]);
 
   const navigate = useNavigate();
 
@@ -118,22 +122,45 @@ const BookingPage = () => {
   };
 
   // Handle room selection for a hotel
+  // Handle room selection for a hotel
   const handleRoomChange = (hotelId, roomType, count) => {
     setSelectedRooms((prev) => {
-      const existingHotel = prev.find((hotel) => hotel.hotelId === hotelId);
-      if (existingHotel) {
-        const existingRoom = existingHotel.rooms.find(
+      // Create a copy of the previous state to avoid direct mutation
+      const updatedRooms = [...prev];
+
+      // Find the hotel in the updatedRooms array
+      const existingHotelIndex = updatedRooms.findIndex(
+        (hotel) => hotel.hotelId === hotelId
+      );
+
+      if (existingHotelIndex !== -1) {
+        // If hotel exists, find the room type inside that hotel
+        const existingHotel = updatedRooms[existingHotelIndex];
+        const existingRoomIndex = existingHotel.rooms.findIndex(
           (room) => room.type === roomType
         );
-        if (existingRoom) {
-          existingRoom.count = count;
+
+        if (existingRoomIndex !== -1) {
+          // If room exists, update the room count
+          const updatedRoom = {
+            ...existingHotel.rooms[existingRoomIndex],
+            count,
+          };
+          existingHotel.rooms[existingRoomIndex] = updatedRoom;
         } else {
+          // If room does not exist, add the room with the specified count
           existingHotel.rooms.push({ type: roomType, count });
         }
       } else {
-        prev.push({ hotelId, rooms: [{ type: roomType, count }] });
+        // If the hotel doesn't exist in the state, add a new hotel entry with rooms
+        updatedRooms.push({
+          hotelId,
+          rooms: [{ type: roomType, count }],
+        });
       }
-      return [...prev];
+
+      // Return the updated state
+      return updatedRooms;
     });
   };
 
@@ -213,6 +240,76 @@ const BookingPage = () => {
       setCheckOutDate(newCheckInDate);
     }
   };
+  const handleCaptureLocations = async () => {
+    if (attraction.location && startingLocation) {
+      try {
+        console.log("Starting Location:", startingLocation);
+        console.log("Attraction Location:", attraction.location);
+
+        // Fetch routes using axios
+        const response = await axios.get("http://localhost:5555/routes"); // Adjust URL if needed
+        const routes = response.data;
+
+        // Find matching routes
+        const matchingRoute = routes.filter(
+          (route) => route.startLocation === startingLocation
+        );
+
+        // Check if we found a matching route and if sites are populated
+        if (matchingRoute && matchingRoute.length > 0) {
+          console.log("Matching Route Found:", matchingRoute);
+
+          // Populate the sites data (site._id, name, etc.)
+          const siteDetails = matchingRoute[0].sites; // Use the first matching route
+
+          // Extract and log details of sites
+          const siteIds = siteDetails.map((site) => ({
+            siteId: site._id,
+            siteName: site.name,
+            siteAddress: site.address,
+          }));
+          console.log("Site IDs and Details:", siteIds);
+
+          // Update state to trigger rendering of sites in UI
+          setMatchingSites(siteIds); // Store site details in state
+          setShowSites(true); // Set showSites to true to display the sites
+        } else {
+          console.log("No matching route found.");
+          setMatchingSites([]); // Clear previous sites in case of no match
+          setShowSites(false); // Hide the sites container if no matching route
+        }
+      } catch (error) {
+        console.error("Error fetching routes:", error);
+        setMatchingSites([]); // Clear sites on error
+        setShowSites(false); // Hide sites container on error
+      }
+    } else {
+      alert(
+        "Please enter both the starting location and select an attraction."
+      );
+    }
+  };
+
+  const handleSiteSelection = (e, site) => {
+    const { checked, value } = e.target; // Destructure to get checkbox status and value
+
+    if (checked) {
+      // If checkbox is checked, add the site to the selected sites array
+      setSelectedSites((prevSelected) => [
+        ...prevSelected, // Preserve previous selected sites
+        {
+          siteId: value,
+          siteName: site.siteName,
+          siteAddress: site.siteAddress,
+        },
+      ]);
+    } else {
+      // If checkbox is unchecked, remove the site from the selected sites array
+      setSelectedSites((prevSelected) =>
+        prevSelected.filter((selectedSite) => selectedSite.siteId !== value)
+      );
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -223,23 +320,40 @@ const BookingPage = () => {
   }
 
   return (
-    <form onSubmit={handleBooking} className="p-8">
+    <form
+      onSubmit={handleBooking}
+      className="p-8 max-w-3xl mx-auto bg-white shadow-lg rounded-lg"
+    >
       {/* Starting Location */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Enter Starting Location</h2>
-        <input
-          type="text"
-          value={startingLocation}
-          onChange={(e) => setStartingLocation(e.target.value)}
-          placeholder="Enter your starting location"
-          required
-          className="border-2 p-2 w-full"
-        />
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          Enter Starting Location
+        </h2>
+        <div className="flex items-center space-x-4">
+          <input
+            type="text"
+            value={startingLocation}
+            onChange={(e) => setStartingLocation(e.target.value)}
+            placeholder="Enter your starting location"
+            required
+            className="border-2 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="button"
+            onClick={handleCaptureLocations}
+            className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+          >
+            Capture
+          </button>
+        </div>
       </div>
 
+      {/* Attraction Information */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">{attraction.name}</h1>
-        <p className="text-gray-700">{attraction.description}</p>
+        <h1 className="text-2xl font-semibold text-gray-800">
+          {attraction.name}
+        </h1>
+        <p className="text-gray-700 mb-2">{attraction.description}</p>
         <p className="text-gray-600">Category: {attraction.category}</p>
         <p className="text-gray-600">Location: {attraction.location}</p>
         <p className="text-gray-600">Address: {attraction.address}</p>
@@ -250,23 +364,57 @@ const BookingPage = () => {
                 key={index}
                 src={photo}
                 alt={`Attraction ${index + 1}`}
-                className="w-full h-auto rounded-md"
+                className="w-full h-auto rounded-lg shadow-md"
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Check-in and Check-out Dates */}
+      {/* Site Selection */}
+      {showSites && matchingSites.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">
+            Select Sites to Visit
+          </h2>
+          {matchingSites.map((site, index) => (
+            <div
+              key={index}
+              className="bg-gray-100 p-4 rounded-lg shadow-sm mb-4"
+            >
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  value={site.siteId}
+                  onChange={(e) => handleSiteSelection(e, site)}
+                  className="h-5 w-5 text-blue-500 focus:ring-2 focus:ring-blue-300"
+                />
+                <span className="text-gray-700">{site.siteName}</span>
+              </label>
+              <p className="text-gray-600 mt-2">
+                <strong>Address:</strong> {site.siteAddress}
+              </p>
+              <p className="text-gray-600">
+                <strong>Description:</strong>{" "}
+                {site.description || "No description available"}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Dates */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Select Dates</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          Select Dates
+        </h2>
         <div className="space-y-4">
           <input
             type="date"
             value={checkInDate}
             onChange={handleCheckInDateChange}
             required
-            className="border-2 p-2 w-full"
+            className="border-2 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="date"
@@ -274,12 +422,12 @@ const BookingPage = () => {
             onChange={(e) => setCheckOutDate(e.target.value)}
             required
             min={checkInDate}
-            className="border-2 p-2 w-full"
+            className="border-2 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
 
-      {/* Hotels with Room Selection Inside */}
+      {/* Hotel Selection */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Choose a Hotel</h2>
         <div className="space-y-4">
@@ -294,31 +442,55 @@ const BookingPage = () => {
               onClick={() => setSelectedHotel(hotel)}
             >
               <h3 className="text-lg font-semibold">{hotel.name}</h3>
-              <p className="text-gray-600">Distance: {distance.toFixed(2)} km</p>
+              <p className="text-gray-600">
+                Distance: {distance.toFixed(2)} km
+              </p>
               <p className="text-gray-700">{hotel.address}</p>
-              <p className="text-gray-600">Price per night: {hotel.price}</p>
 
-              {/* Room selection for the hotel */}
-              <div className="mt-4">
-                {["Single", "Double", "Suite"].map((roomType) => (
-                  <div key={roomType} className="flex items-center mb-4">
-                    <label className="mr-4">{roomType}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="5"
-                      value={
-                        selectedRooms.find(
-                          (room) => room.hotelId === hotel._id && room.type === roomType
-                        )?.count || 0
-                      }
-                      onChange={(e) =>
-                        handleRoomChange(hotel._id, roomType, Number(e.target.value))
-                      }
-                      className="border-2 p-2 w-16"
-                    />
-                  </div>
-                ))}
+              <p className="text-gray-600">Price per night: {hotel.city}</p>
+              <p className="text-gray-600">
+                Contact: {hotel.phone} | {hotel.email}
+              </p>
+              <p className="text-gray-600">Facilities {hotel.facilities}</p>
+
+              {/* Compact and cute room selection */}
+              <div className="mt-4 flex flex-wrap gap-4">
+                {hotel.roomTypes.map((roomType) => {
+                  const room = selectedRooms.find(
+                    (room) =>
+                      room.hotelId === hotel._id && room.type === roomType
+                  );
+                  const roomCount = room ? room.count : 0;
+
+                  return (
+                    <div
+                      key={roomType}
+                      className={`w-24 h-24 p-4 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:bg-blue-100 ${
+                        roomCount > 0 ? "bg-blue-200" : "bg-white"
+                      }`}
+                      onClick={() => setSelectedRoomType(roomType, hotel._id)}
+                    >
+                      <div className="font-semibold text-sm mb-2">
+                        {roomType}
+                      </div>
+                      <input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={roomCount}
+                        onChange={(e) =>
+                          handleRoomChange(
+                            hotel._id,
+                            roomType,
+                            Number(e.target.value)
+                          )
+                        }
+                        className="border-2 p-1 w-12 text-center rounded-md"
+                      />
+                      <span className="text-xs mt-2">rooms</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -327,22 +499,27 @@ const BookingPage = () => {
 
       {/* User Details */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Enter Your Details</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          Enter Your Details
+        </h2>
         <UserDetailsForm
           userDetails={userDetails}
           handleInputChange={handleInputChange}
         />
       </div>
 
-      {/* Summary and Confirm */}
+      {/* Booking Summary */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Booking Summary</h2>
-        <p className="text-gray-600">
-          Total Price: {totalPrice.toFixed(2)}
-        </p>
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          Booking Summary
+        </h2>
+        <p className="text-gray-600">Total Price: {totalPrice.toFixed(2)}</p>
       </div>
 
-      <button type="submit" className="btn bg-blue-500 text-white w-full py-3">
+      <button
+        type="submit"
+        className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-300"
+      >
         Confirm Booking
       </button>
     </form>
