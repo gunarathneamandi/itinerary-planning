@@ -7,14 +7,14 @@ const router = express.Router();
 // Route to save a new hotel
 router.post("/", async (request, response) => {
   try {
-    const { name, address, city, phone, email, facilities, price, roomTypes } =
+    const { name, address, city, phone, email, facilities, roomTypes } =
       request.body;
 
     // Check for required fields
-    if (!name || !address || !city || !price || !roomTypes) {
+    if (!name || !address || !city || !roomTypes) {
       return response.status(400).send({
         message:
-          "Please send all required fields: name, address, city, price, roomTypes",
+          "Please send all required fields: name, address, city, roomTypes",
       });
     }
 
@@ -40,7 +40,6 @@ router.post("/", async (request, response) => {
       phone,
       email,
       facilities: facilities || [], // Default to an empty array if no facilities provided
-
       roomTypes: roomTypes || ["Single", "Double", "Suite"], // Default to predefined room types if not provided
     };
 

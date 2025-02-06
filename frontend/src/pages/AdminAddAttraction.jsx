@@ -7,7 +7,7 @@ const AdminAddAttraction = () => {
     description: "",
     category: "",
     location: "",
-    entryFee: "",
+    weather: "",
     address: "",
   });
 
@@ -46,7 +46,7 @@ const AdminAddAttraction = () => {
 
       if (response.status === 201) {
         setMessage("Attraction added successfully!");
-        setAttraction({ name: "", description: "", category: "", location: "", entryFee: "", address: "" });
+        setAttraction({ name: "", description: "", category: "", location: "", weather: "", address: "" });
         setPhotos([]);
       } else {
         setError("Failed to add attraction.");
@@ -64,6 +64,7 @@ const AdminAddAttraction = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" name="name" value={attraction.name} onChange={handleChange} placeholder="Attraction Name" required className="w-full p-2 border rounded" />
+        
         <textarea name="description" value={attraction.description} onChange={handleChange} placeholder="Description" required className="w-full p-2 border rounded"></textarea>
 
         <select name="category" value={attraction.category} onChange={handleChange} required className="w-full p-2 border rounded">
@@ -75,8 +76,10 @@ const AdminAddAttraction = () => {
           ))}
         </select>
 
-        <input type="text" name="location" value={attraction.location} onChange={handleChange} placeholder="Location" required className="w-full p-2 border rounded" />
-        <input type="number" name="entryFee" value={attraction.entryFee} onChange={handleChange} placeholder="Entry Fee (Optional)" className="w-full p-2 border rounded" />
+        <input type="text" name="location" value={attraction.location} onChange={handleChange} placeholder="City/Location" required className="w-full p-2 border rounded" />
+
+        <input type="text" name="weather" value={attraction.weather} onChange={handleChange} placeholder="Weather (Optional)" className="w-full p-2 border rounded" />
+
         <input type="text" name="address" value={attraction.address} onChange={handleChange} placeholder="Full Address" required className="w-full p-2 border rounded" />
 
         <label className="block text-sm font-semibold mb-1">Upload Photos</label>

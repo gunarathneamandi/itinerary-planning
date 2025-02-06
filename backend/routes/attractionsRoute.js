@@ -21,7 +21,6 @@ router.post("/", upload.array("photos", 5), async (request, response) => {
       !request.body.description ||
       !request.body.location ||
       !request.body.category ||
-      
       !request.body.address // Check if address is provided
     ) {
       return response.status(400).send({
@@ -34,7 +33,7 @@ router.post("/", upload.array("photos", 5), async (request, response) => {
       description: request.body.description,
       category: request.body.category,
       location: request.body.location,
-      
+      weather: request.body.weather, // Include weather in the request body
       address: request.body.address, // Save address as a single string
       photos: request.files.map((file) => `/images/${file.filename}`), // Save image paths
     };
