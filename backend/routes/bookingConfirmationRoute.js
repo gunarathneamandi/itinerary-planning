@@ -11,8 +11,11 @@ router.post("/", async (request, response) => {
     console.log("Request Body Received:", request.body); // Log the request body
     console.log("Incoming Request Body:", request.body);
     const {
+      startingLocation,
       attraction,
+      sites,
       hotel,
+      rooms,
       checkInDate,
       checkOutDate,
 
@@ -25,20 +28,21 @@ router.post("/", async (request, response) => {
 
     // List of required fields
     const requiredFields = [
+      "startingLocation",
       "attraction",
-      "hotel",
-      "checkInDate",
       "name",
       "email",
       "contact",
       "address",
-    //   "totalPrice",
+    
     ];
 
     // Check for missing fields
     const missingFields = requiredFields.filter(
       (field) => !request.body[field]
     );
+
+    console.log(missingFields);
 
     if (missingFields.length > 0) {
       console.log("Missing Fields:", missingFields); // Log missing fields
@@ -62,8 +66,11 @@ router.post("/", async (request, response) => {
     // }
 
     const newBooking = {
+      startingLocation,
       attraction,
-      hotel: hotelObjectId, // Use the converted ObjectId
+      sites, 
+      hotel, // Use the converted ObjectId
+      rooms,
       checkInDate,
       checkOutDate: checkOutDate || null,
 
@@ -71,13 +78,13 @@ router.post("/", async (request, response) => {
       email,
       contact,
       address,
-      totalPrice: totalPrice || 0,
+      totalPrice: totalPrice || null,
     };
 
     const booking = await Booking.create(newBooking); // Or newBooking.save()
     return response.status(201).json(booking);
   } catch (error) {
-    console.error("Error creating booking:", error.response.data); // Log the full error for debugging
+    console.error("Error creating booking:", error.response); // Log the full error for debugging
     response.status(500).json({ message: error.message }); // Send a more generic message to the client
   }
 });

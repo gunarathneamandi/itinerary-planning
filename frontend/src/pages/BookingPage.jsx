@@ -35,6 +35,8 @@ const BookingPage = () => {
     Suite: 2500,
   };
 
+  
+
   useEffect(() => {
     const fetchAttractionAndHotels = async () => {
       try {
@@ -122,73 +124,69 @@ const BookingPage = () => {
   };
 
   // Handle room selection for a hotel
-  // Handle room selection for a hotel
+
   const handleRoomChange = (hotelId, roomType, count) => {
     setSelectedRooms((prev) => {
-      // Create a copy of the previous state to avoid direct mutation
       const updatedRooms = [...prev];
-
-      // Find the hotel in the updatedRooms array
       const existingHotelIndex = updatedRooms.findIndex(
         (hotel) => hotel.hotelId === hotelId
       );
 
       if (existingHotelIndex !== -1) {
-        // If hotel exists, find the room type inside that hotel
         const existingHotel = updatedRooms[existingHotelIndex];
-        const existingRoomIndex = existingHotel.rooms.findIndex(
+        const roomIndex = existingHotel.rooms.findIndex(
           (room) => room.type === roomType
         );
 
-        if (existingRoomIndex !== -1) {
-          // If room exists, update the room count
-          const updatedRoom = {
-            ...existingHotel.rooms[existingRoomIndex],
-            count,
-          };
-          existingHotel.rooms[existingRoomIndex] = updatedRoom;
-        } else {
-          // If room does not exist, add the room with the specified count
+        if (roomIndex !== -1) {
+          if (count === 0) {
+            // Remove the room if count is 0
+            existingHotel.rooms.splice(roomIndex, 1);
+          } else {
+            existingHotel.rooms[roomIndex].count = count;
+          }
+        } else if (count > 0) {
+          // Add new room type if it doesn't exist
           existingHotel.rooms.push({ type: roomType, count });
         }
-      } else {
-        // If the hotel doesn't exist in the state, add a new hotel entry with rooms
-        updatedRooms.push({
+      } else if (count > 0) {
+        // Add new hotel with the room type
+        selectedRooms.push({
           hotelId,
           rooms: [{ type: roomType, count }],
         });
       }
 
-      // Return the updated state
       return updatedRooms;
     });
   };
 
   // Calculate total price
-  const calculateTotalPrice = () => {
-    let roomTotal = selectedRooms.reduce((total, hotel) => {
-      hotel.rooms.forEach(
-        (room) => (total += room.count * roomPrices[room.type])
-      );
-      return total;
-    }, 0);
+  // const calculateTotalPrice = () => {
+  //   let roomTotal = selectedRooms.reduce((total, hotel) => {
+  //     hotel.rooms.forEach(
+  //       (room) => (total += room.count * roomPrices[room.type])
+  //     );
+  //     return total;
+  //   }, 0);
 
-    let hotelTotal = selectedHotel ? selectedHotel.price : 0;
-    let total = roomTotal + hotelTotal - discount;
-    setTotalPrice(total);
-  };
+  //   let hotelTotal = selectedHotel ? selectedHotel.price : 0;
+  //   let total = roomTotal + hotelTotal - discount;
+  //   setTotalPrice(total);
+  // };
 
-  useEffect(() => {
-    calculateTotalPrice();
-  }, [selectedRooms, selectedHotel, discount]);
+  // useEffect(() => {
+  //   calculateTotalPrice();
+  // }, [selectedRooms, selectedHotel, discount]);
 
   const handleBooking = async (e) => {
     e.preventDefault();
 
+    
+
     if (
-      !selectedHotel._id ||
-      !checkInDate ||
-      !checkOutDate ||
+      !startingLocation ||
+      !attraction ||
       !userDetails.name ||
       !userDetails.email ||
       !userDetails.contact ||
@@ -199,20 +197,22 @@ const BookingPage = () => {
     }
 
     const bookingDetails = {
-      attraction: attractionId,
+      startingLocation: startingLocation,
+      attraction: attraction,
+      sites: selectedSites._id,
       hotel: selectedHotel._id,
-      rooms: selectedRooms,
+      rooms: "selectedRooms",
       checkInDate,
       checkOutDate,
       name: userDetails.name,
       email: userDetails.email,
       contact: userDetails.contact,
       address: userDetails.address,
-      startingLocation,
-      totalPrice: Number(totalPrice),
+      totalPrice: totalPrice,
     };
 
     try {
+      console.log(bookingDetails);
       const response = await axios.post(
         "http://localhost:5555/bookingConfirmation",
         bookingDetails
@@ -225,7 +225,8 @@ const BookingPage = () => {
         alert("There was an issue with your booking. Please try again.");
       }
     } catch (error) {
-      console.error("Error posting booking details:", error);
+      console.error("Error posting booking details:", error.response?.data || error.message);
+
       alert("Booking failed. Please try again.");
     }
   };
@@ -252,7 +253,9 @@ const BookingPage = () => {
 
         // Find matching routes
         const matchingRoute = routes.filter(
-          (route) => route.startLocation === startingLocation
+          (route) =>
+            route.startLocation === startingLocation &&
+            route.finalDestination === attraction.location
         );
 
         // Check if we found a matching route and if sites are populated
@@ -447,7 +450,7 @@ const BookingPage = () => {
               </p>
               <p className="text-gray-700">{hotel.address}</p>
 
-              <p className="text-gray-600">Price per night: {hotel.city}</p>
+              <p className="text-gray-600">City: {hotel.city}</p>
               <p className="text-gray-600">
                 Contact: {hotel.phone} | {hotel.email}
               </p>
@@ -460,31 +463,31 @@ const BookingPage = () => {
                     (room) =>
                       room.hotelId === hotel._id && room.type === roomType
                   );
-                  const roomCount = room ? room.count : 0;
+                  const roomCount = room ? room.count : "";
 
                   return (
                     <div
                       key={roomType}
-                      className={`w-24 h-24 p-4 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:bg-blue-100 ${
+                      className={`w-24 h-24 p-4 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 ${
                         roomCount > 0 ? "bg-blue-200" : "bg-white"
                       }`}
-                      onClick={() => setSelectedRoomType(roomType, hotel._id)}
                     >
                       <div className="font-semibold text-sm mb-2">
                         {roomType}
                       </div>
                       <input
-                        type="number"
-                        min="0"
-                        max="5"
+                        type="text"
                         value={roomCount}
-                        onChange={(e) =>
-                          handleRoomChange(
-                            hotel._id,
-                            roomType,
-                            Number(e.target.value)
-                          )
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^\d*$/.test(value)) {
+                            handleRoomChange(
+                              hotel._id,
+                              roomType,
+                              Number(value)
+                            );
+                          }
+                        }}
                         className="border-2 p-1 w-12 text-center rounded-md"
                       />
                       <span className="text-xs mt-2">rooms</span>

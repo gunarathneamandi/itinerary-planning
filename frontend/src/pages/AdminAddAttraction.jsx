@@ -7,7 +7,7 @@ const AdminAddAttraction = () => {
     description: "",
     category: "",
     location: "",
-    weather: "",
+    
     address: "",
   });
 
@@ -46,7 +46,7 @@ const AdminAddAttraction = () => {
 
       if (response.status === 201) {
         setMessage("Attraction added successfully!");
-        setAttraction({ name: "", description: "", category: "", location: "", weather: "", address: "" });
+        setAttraction({ name: "", description: "", category: "", location: "", address: "" });
         setPhotos([]);
       } else {
         setError("Failed to add attraction.");
@@ -78,7 +78,7 @@ const AdminAddAttraction = () => {
 
         <input type="text" name="location" value={attraction.location} onChange={handleChange} placeholder="City/Location" required className="w-full p-2 border rounded" />
 
-        <input type="text" name="weather" value={attraction.weather} onChange={handleChange} placeholder="Weather (Optional)" className="w-full p-2 border rounded" />
+        
 
         <input type="text" name="address" value={attraction.address} onChange={handleChange} placeholder="Full Address" required className="w-full p-2 border rounded" />
 

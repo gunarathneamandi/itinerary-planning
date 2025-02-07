@@ -5,42 +5,43 @@ const { Schema, model } = mongoose;
 // Define Booking Schema
 const bookingSchema = new Schema(
   {
+    //starting location
+    startingLocation: {
+      type: String,
+      required: true,
+    },
     // Reference to the attraction
     attraction: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Attraction", // Reference to Attraction model
       required: true,
     },
+    sites: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Site",
+      required: false,
+    },
+
     // Selected hotel details
     hotel: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hotel",
-      required: true,
-  },
+      required: false,
+    },
+    rooms: {
+      type: String,
+      required: false,
+    },
     // Check-in date
     checkInDate: {
       type: Date,
-      required: true, // Check-in date is mandatory
+      required: false, // Check-in date is mandatory
     },
     // Check-out date
     checkOutDate: {
       type: Date,
       required: false, // Check-out date is optional
     },
-
-    // // Selected meals (breakfast, lunch, dinner)
-    // meals: {
-    //   type: [String],
-    //   enum: ["Breakfast", "Lunch", "Dinner"], // Restrict options
-    //   required: false,
-    // },
-    // // Selected transport mode
-    // transport: {
-    //   type: String,
-    //   enum: ["Bike", "Car", "Tuk Tuk"], // Restrict options
-    //   required: false,
-    // },
-    // // User details
 
     name: {
       type: String,
@@ -62,15 +63,13 @@ const bookingSchema = new Schema(
     // Total price of the package
     totalPrice: {
       type: Number,
-      required: true,
-      default: 1000,
-      min: 0,
+      required: false,
     },
     // Timestamp for booking date
-    bookingDate: {
-      type: Date,
-      default: Date.now, // Default to current date
-    },
+    // bookingDate: {
+    //   type: Date,
+    //   default: Date.now, // Default to current date
+    // },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt fields
