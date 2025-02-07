@@ -25,11 +25,11 @@ const AdminHome = () => {
 
             {/* Cards for Admin Options */}
             <div style={styles.cardContainer}>
-                <Card title="View Hotel" link="/view-hotel" />
-                <Card title="View Attraction" link="/view-attraction" />
-                <Card title="Add Hotel" link="/add-hotel" />
-                <Card title="Add Attraction" link="/add-attraction" />
-                <Card title="View Booking" link="/view-booking" />
+                <Card title="View Hotel" link="/admin/hotelview" />
+                <Card title="View Attraction" link="/admin/viewattraction" />
+                <Card title="Add Hotel" link="/admin/addhotel" />
+                <Card title="Add Attraction" link="/admin/addattraction" />
+                <Card title="View Booking" link="/admin/view-booking" />
             </div>
         </div>
     );

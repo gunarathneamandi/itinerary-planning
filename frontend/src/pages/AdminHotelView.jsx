@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const HotelsPage = () => {
+const AdminHotelView = () => {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -8,7 +8,7 @@ const HotelsPage = () => {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await fetch("http://localhost:5555/hotels"); // Update with your actual API URL
+        const response = await fetch("http://localhost:5555/booking/hotels"); // Update with your actual API URL
         if (!response.ok) throw new Error("Failed to fetch hotels");
         
         const data = await response.json();
@@ -46,4 +46,4 @@ const HotelsPage = () => {
   );
 };
 
-export default HotelsPage;
+export default AdminHotelView;
