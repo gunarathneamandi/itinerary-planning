@@ -11,7 +11,10 @@ import SitesPage from "./pages/SitesPage";
 import SiteFound from "./pages/SiteFound";
 import HotelsPage from "./pages/HotelsPage";
 
+
+
 const App = () => {
+  
   return (
     <Routes>
       <Route path="/show" element={<ShowAttractions />} />
@@ -24,6 +27,7 @@ const App = () => {
       <Route path="/admin/addattraction" element={<AdminAddAttraction />} />
       <Route path="/admin/viewattraction" element={<AdminViewAttraction />} />
 
+    
 
       <Route path="/showsite" element={<SiteFound/>}/>
       <Route path="/hotelview" element={<HotelsPage/>}/>
