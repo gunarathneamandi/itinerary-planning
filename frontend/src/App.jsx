@@ -12,7 +12,7 @@ import SiteFound from "./pages/SiteFound";
 import AdminHotelView from "./pages/AdminHotelView";
 import AdminLogin from "./pages/LoginPage";
 import AdminHome from "./pages/AdminHome";
-
+import BookingList from "./pages/BookingList";
 
 const App = () => {
   
@@ -33,8 +33,8 @@ const App = () => {
 
       <Route path="/showsite" element={<SiteFound/>}/>
       <Route path="/admin/hotelview" element={<AdminHotelView/>}/>
-
-    
+      <Route path="/admin/bookingview" element={<BookingList/>}/>
+     
 
     </Routes>
   );

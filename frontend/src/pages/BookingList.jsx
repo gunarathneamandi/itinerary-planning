@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  CardActionArea,
-  Typography,
-  Grid,
-  List,
-  ListItem,
-  Divider,
-} from '@mui/material';
 
 const BookingList = () => {
   const [bookings, setBookings] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -21,6 +11,7 @@ const BookingList = () => {
         const response = await axios.get('http://localhost:5555/bookingConfirmation/allbooking');
         setBookings(response.data);
       } catch (error) {
+        setError('Error fetching bookings');
         console.error('Error fetching bookings:', error);
       }
     };
@@ -28,69 +19,57 @@ const BookingList = () => {
     fetchBookings();
   }, []);
 
+  if (error) {
+    return <div>{error}</div>;
+  }
+
   return (
-    <Grid container spacing={3}>
+    <div className="booking-list">
       {bookings.map((booking) => (
-        <Grid item xs={12} sm={6} md={4} key={booking._id}>
-          <Card>
-            <CardActionArea>
-              {booking.attraction?.photos?.[0] && (
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={booking.attraction.photos[0]}
-                  alt={booking.attraction.name}
-                />
-              )}
-              <CardContent>
-                <Typography variant="h5" component="div">
-                  Booking for {booking.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Starting Location: {booking.startingLocation}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Attraction: {booking.attraction?.name || 'N/A'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Hotel: {booking.hotel?.name || 'N/A'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Check-In Date:{' '}
-                  {booking.checkInDate
-                    ? new Date(booking.checkInDate).toLocaleDateString()
-                    : 'N/A'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Check-Out Date:{' '}
-                  {booking.checkOutDate
-                    ? new Date(booking.checkOutDate).toLocaleDateString()
-                    : 'N/A'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Price: {booking.totalPrice ? `$${booking.totalPrice}` : 'N/A'}
-                </Typography>
-                {booking.sites && booking.sites.length > 0 && (
-                  <>
-                    <Divider sx={{ marginY: 1 }} />
-                    <Typography variant="h6" component="div">
-                      Sites:
-                    </Typography>
-                    <List>
-                      {booking.sites.map((site) => (
-                        <ListItem key={site._id}>
-                          {site.name} - {site.address}
-                        </ListItem>
-                      ))}
-                    </List>
-                  </>
-                )}
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
+        <div className="booking-card" key={booking._id}>
+          {booking.attraction?.photos?.[0] && (
+            <img
+              className="booking-image"
+              src={booking.attraction.photos[0]}
+              alt={booking.attraction.name}
+            />
+          )}
+          <div className="booking-content">
+            <h5>Booking for {booking.name}</h5>
+            <p>Starting Location: {booking.startingLocation}</p>
+            <p>Attraction: {booking.attraction?.name || 'N/A'}</p>
+            <p>Hotel: {booking.hotel?.name || 'N/A'}</p>
+            <p>
+              Check-In Date:{' '}
+              {booking.checkInDate
+                ? new Date(booking.checkInDate).toLocaleDateString()
+                : 'N/A'}
+            </p>
+            <p>
+              Check-Out Date:{' '}
+              {booking.checkOutDate
+                ? new Date(booking.checkOutDate).toLocaleDateString()
+                : 'N/A'}
+            </p>
+            <p>
+              Total Price: {booking.totalPrice ? `$${booking.totalPrice}` : 'N/A'}
+            </p>
+            {booking.sites && booking.sites.length > 0 && (
+              <div className="booking-sites">
+                <h6>Sites:</h6>
+                <ul>
+                  {booking.sites.map((site) => (
+                    <li key={site._id}>
+                      {site.name} - {site.address}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       ))}
-    </Grid>
+    </div>
   );
 };
 
