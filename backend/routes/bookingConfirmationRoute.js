@@ -10,6 +10,8 @@ router.post("/", async (request, response) => {
   try {
     console.log("Request Body Received:", request.body); // Log the request body
     console.log("Incoming Request Body:", request.body);
+
+
     const {
       startingLocation,
       attraction,
@@ -53,7 +55,7 @@ router.post("/", async (request, response) => {
     }
 
     // Validate and Convert hotel ID (Crucial)
-    let hotelObjectId;
+    let hotelObjectId = null; // Initialize to null
     if (!hotel || !mongoose.Types.ObjectId.isValid(hotel)) {
       return response.status(400).json({ message: "Invalid hotel ID" });
     } else {
@@ -65,13 +67,16 @@ router.post("/", async (request, response) => {
     //   return response.status(400).json({ message: "Invalid total price" });
     // }
 
+    
+
+
     const newBooking = {
       startingLocation,
       attraction,
       sites, 
       hotel, // Use the converted ObjectId
-      rooms,
-      checkInDate,
+      rooms: rooms || null,
+      checkInDate: checkInDate || null,
       checkOutDate: checkOutDate || null,
 
       name,

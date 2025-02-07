@@ -59,53 +59,64 @@ const ShowAttractions = () => {
   };
 
   const handleViewDetails = (attractionId) => {
-    if (!startingLocation) {
-      // If starting location is not set, show modal to input it
-      setShowLocationModal(true);
-    } else {
-      // Navigate with starting location already available
-      navigate(`/details/${attractionId}?start=${startingLocation}`);
-    }
+    // Navigate with starting location already available
+    navigate(`/details/${attractionId}`);
   };
 
-  const handleLocationSubmit = () => {
-    if (startingLocation) {
-      // Close the modal and navigate with the starting location
-      setShowLocationModal(false);
-      navigate(`/details/${attraction._id}?start=${startingLocation}`);
-    }
-  };
+  // const handleLocationSubmit = () => {
+  //   if (startingLocation) {
+  //     // Close the modal and navigate with the starting location
+  //     setShowLocationModal(false);
+  //     navigate(`/details/${attraction._id}?start=${startingLocation}`);
+  //   }
+  // };
 
   return (
-    <div className="bg-gray-50 p-6">
-      {/* Search input */}
-      <div className="mb-6 max-w-xl mx-auto">
-        <input
-          type="text"
-          placeholder="Search by Location"
-          className="w-full border rounded-md p-3 text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(e) => setQuery(e.target.value)} // Sets the query state based on the input value
-        />
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen p-8">
+      {/* Search and Filter Section */}
+      <div className="max-w-4xl mx-auto mb-12 space-y-6">
+        {/* Search input */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search by Location..."
+            className="w-full px-6 py-4 text-lg border-0 rounded-xl shadow-md focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 placeholder-gray-400/80 bg-white/90 backdrop-blur-sm"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <svg 
+            className="absolute right-4 top-4 h-6 w-6 text-gray-400" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        {/* Category filter dropdown */}
+        <div className="relative">
+          <select
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            value={selectedCategory}
+            className="w-full px-6 py-4 text-lg appearance-none border-0 rounded-xl shadow-md focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/90 backdrop-blur-sm text-gray-600"
+          >
+            <option value="" className="text-gray-400">All Categories</option>
+            {categories.map((category, index) => (
+              <option key={index} value={category} className="text-gray-600">
+                {category}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
       </div>
 
-      {/* Category filter dropdown */}
-      <div className="mb-6 max-w-xl mx-auto">
-        <select
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          value={selectedCategory}
-          className="w-full border rounded-md p-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Categories</option>
-          {categories.map((category, index) => (
-            <option key={index} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Attractions list */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {/* Attractions Grid */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {loading ? (
           <Spinner />
         ) : (
@@ -125,43 +136,58 @@ const ShowAttractions = () => {
             .map((attraction, index) => (
               <div
                 key={attraction._id}
-                className="bg-white shadow-lg rounded-lg p-4 flex flex-col justify-between transform hover:scale-105 transition duration-300 ease-in-out"
+                className="group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden"
               >
-                <div className="flex flex-col">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                    {attraction.name}
-                  </h2>
-                  <p className="text-gray-600 text-sm mb-2">
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">{attraction.name}</h2>
+                    <span className="px-3 py-1 text-sm bg-blue-100/80 text-blue-800 rounded-full">
+                      {attraction.category}
+                    </span>
+                  </div>
+                  
+                  <p className="text-gray-600 leading-relaxed line-clamp-3">
                     {attraction.description}
                   </p>
-                  <p className="text-gray-500 text-sm mb-1">
-                    <strong>Category:</strong> {attraction.category}
-                  </p>
-                  <p className="text-gray-500 text-sm mb-1">
-                    <strong>Location:</strong> {attraction.location}
-                  </p>
-                  <p className="text-gray-500 text-sm mb-1">
-                    <strong>Address:</strong> {attraction.address}{" "}
-                    {/* Displaying the real address */}
-                  </p>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center text-gray-500">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {attraction.location}
+                    </div>
+                    
+                    <div className="flex items-center text-gray-500">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      {attraction.address}
+                    </div>
 
-                  <div className="flex items-center text-sm text-gray-500 mb-4">
-                    {weatherData[attraction._id] ? (
-                      <>
-                        <p>{weatherData[attraction._id].main.temp}°C</p>
-                        <p className="ml-2">
-                          {weatherData[attraction._id].weather[0].description}
-                        </p>
-                      </>
-                    ) : (
-                      <p>Loading weather...</p>
-                    )}
+                    <div className="flex items-center text-gray-500">
+                      {weatherData[attraction._id] ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                          </svg>
+                          <span className="font-medium">{weatherData[attraction._id].main.temp}°C</span>
+                          <span className="ml-2 text-gray-400">
+                            ({weatherData[attraction._id].weather[0].description})
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400">Loading weather...</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 flex justify-end">
+
+                <div className="px-6 pb-4">
                   <button
                     onClick={() => handleViewDetails(attraction._id)}
-                    className="bg-blue-700 text-white py-2 px-6 rounded-lg hover:bg-blue-800 transition duration-300"
+                    className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 shadow-md hover:shadow-lg"
                   >
                     View Details
                   </button>
@@ -171,30 +197,30 @@ const ShowAttractions = () => {
         )}
       </div>
 
-      {/* Location input modal */}
+      {/* Location Modal */}
       {showLocationModal && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg w-80">
-            <h3 className="text-lg font-semibold mb-4">Enter Your Starting Location</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md transform transition-all">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">Enter Starting Location</h3>
             <input
               type="text"
-              placeholder="Starting Location"
-              className="w-full border rounded-md p-3 text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., 123 Main Street"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
               value={startingLocation}
               onChange={(e) => setStartingLocation(e.target.value)}
             />
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={handleLocationSubmit}
-                className="bg-blue-700 text-white py-2 px-6 rounded-lg hover:bg-blue-800 transition duration-300"
-              >
-                Submit
-              </button>
+            <div className="mt-6 flex justify-end space-x-3">
               <button
                 onClick={() => setShowLocationModal(false)}
-                className="ml-4 bg-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 transition duration-300"
+                className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleLocationSubmit}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Confirm
               </button>
             </div>
           </div>

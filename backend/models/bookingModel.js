@@ -30,7 +30,7 @@ const bookingSchema = new Schema(
       required: false,
     },
     rooms: {
-      type: String,
+      type: [String], // Change to an array of strings
       required: false,
     },
     // Check-in date
