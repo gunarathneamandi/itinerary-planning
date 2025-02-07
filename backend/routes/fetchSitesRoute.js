@@ -30,4 +30,24 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Fetch sites based on the provided site ID
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Fetch site by its ID
+    const site = await Site.findById(id);
+
+    if (!site) {
+      return res.status(404).json({ message: "Site not found" });
+    }
+
+    res.json(site);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch site" });
+  }
+});
+
+
 export default router;
