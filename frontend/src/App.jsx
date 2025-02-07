@@ -10,8 +10,8 @@ import AdminViewAttraction from "./pages/AdminViewAttraction";
 import SitesPage from "./pages/SitesPage";
 import SiteFound from "./pages/SiteFound";
 import HotelsPage from "./pages/HotelsPage";
-
-
+import AdminLogin from "./pages/LoginPage";
+import AdminHome from "./pages/AdminHome";
 
 const App = () => {
   
@@ -27,7 +27,8 @@ const App = () => {
       <Route path="/admin/addattraction" element={<AdminAddAttraction />} />
       <Route path="/admin/viewattraction" element={<AdminViewAttraction />} />
 
-    
+      <Route path="/admin/login" element={<AdminLogin/>}/>
+      <Route path="/admin/home" element={<AdminHome/>}/> 
 
       <Route path="/showsite" element={<SiteFound/>}/>
       <Route path="/hotelview" element={<HotelsPage/>}/>
