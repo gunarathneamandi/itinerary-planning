@@ -34,7 +34,8 @@ const App = () => {
       <Route path="/showsite" element={<SiteFound/>}/>
       <Route path="/admin/hotelview" element={<AdminHotelView/>}/>
 
-      
+    
+
     </Routes>
   );
 };

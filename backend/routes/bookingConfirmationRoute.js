@@ -138,4 +138,20 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Route to get all bookings
+router.get('/allbooking', async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('attraction') // Populate attraction details
+      .populate('hotel') // Populate hotel details
+      .populate('sites'); // Populate site details
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error('Error retrieving bookings:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 export default router;
