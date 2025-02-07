@@ -16,11 +16,12 @@ const bookingSchema = new Schema(
       ref: "Attraction", // Reference to Attraction model
       required: true,
     },
-    sites: {
+    sites: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Site",
       required: false,
-    },
+    }],
+    
 
     // Selected hotel details
     hotel: {

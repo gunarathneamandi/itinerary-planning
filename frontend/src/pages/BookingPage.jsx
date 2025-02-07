@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import useUserDetails from "../hooks/useUserDetails"; // Import the custom hook
 import UserDetailsForm from "../components/UserDetailsForms.jsx"; // Import the UserDetailsForm component
+import Site from "../../../backend/models/siteModel.js";
 
 const BookingPage = () => {
   const { attractionId } = useParams();
@@ -34,8 +35,6 @@ const BookingPage = () => {
     Double: 1500,
     Suite: 2500,
   };
-
-  
 
   useEffect(() => {
     const fetchAttractionAndHotels = async () => {
@@ -179,57 +178,7 @@ const BookingPage = () => {
   //   calculateTotalPrice();
   // }, [selectedRooms, selectedHotel, discount]);
 
-  const handleBooking = async (e) => {
-    e.preventDefault();
-
-    
-
-    if (
-      !startingLocation ||
-      !attraction ||
-      !userDetails.name ||
-      !userDetails.email ||
-      !userDetails.contact ||
-      !userDetails.address
-    ) {
-      alert("Please complete all fields before booking.");
-      return;
-    }
-
-    const bookingDetails = {
-      startingLocation: startingLocation,
-      attraction: attraction,
-      sites: selectedSites._id,
-      hotel: selectedHotel._id,
-      rooms: "selectedRooms",
-      checkInDate,
-      checkOutDate,
-      name: userDetails.name,
-      email: userDetails.email,
-      contact: userDetails.contact,
-      address: userDetails.address,
-      totalPrice: totalPrice,
-    };
-
-    try {
-      console.log(bookingDetails);
-      const response = await axios.post(
-        "http://localhost:5555/bookingConfirmation",
-        bookingDetails
-      );
-
-      if (response.data && response.data._id) {
-        alert("Booking Success!");
-        navigate(`/bookingConfirmation/${response.data._id}`);
-      } else {
-        alert("There was an issue with your booking. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error posting booking details:", error.response?.data || error.message);
-
-      alert("Booking failed. Please try again.");
-    }
-  };
+  
 
   // Date validation for check-out to be after check-in
   const handleCheckInDateChange = (e) => {
@@ -311,6 +260,66 @@ const BookingPage = () => {
       setSelectedSites((prevSelected) =>
         prevSelected.filter((selectedSite) => selectedSite.siteId !== value)
       );
+    }
+  };
+
+  useEffect(() => {
+    console.log("Updated Selected Sites:", selectedSites);
+  }, [selectedSites]);
+
+
+  const handleBooking = async (e) => {
+    e.preventDefault();
+
+    if (
+      !startingLocation ||
+      !attraction ||
+      !userDetails.name ||
+      !userDetails.email ||
+      !userDetails.contact ||
+      !userDetails.address
+    ) {
+      alert("Please complete all fields before booking.");
+      return;
+    }
+    
+  
+console.log(selectedSites);
+    const bookingDetails = {
+      startingLocation: startingLocation,
+      attraction: attraction,
+      sites: selectedSites.map((site) => site.siteId),
+      hotel: selectedHotel._id,
+      rooms: "selectedRooms",
+      checkInDate,
+      checkOutDate,
+      name: userDetails.name,
+      email: userDetails.email,
+      contact: userDetails.contact,
+      address: userDetails.address,
+      totalPrice: totalPrice,
+    };
+
+    try {
+      console.log(bookingDetails);
+      const response = await axios.post(
+        "http://localhost:5555/bookingConfirmation",
+        bookingDetails
+      );
+
+      if (response.data && response.data._id) {
+        alert("Booking Success!");
+        navigate(`/bookingConfirmation/${response.data._id}`);
+      } else {
+        alert("There was an issue with your booking. Please try again.");
+      }
+    } catch (error) {
+      console.error(
+        "Error posting booking details:",
+        error.response?.data || error.message
+      );
+
+      alert("Booking failed. Please try again.");
     }
   };
 

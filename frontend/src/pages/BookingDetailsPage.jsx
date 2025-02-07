@@ -163,6 +163,14 @@ const BookingDetailsPage = () => {
         <p className="text-gray-600">Location: {attraction.location}</p>
       </div>
 
+      {/* Site Details */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Attraction</h2>
+        <p className="text-gray-700">{attraction.name}</p>
+        <p className="text-gray-600">{attraction.description}</p>
+        <p className="text-gray-600">Location: {attraction.location}</p>
+      </div>
+
       {/* Hotel Details */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Hotel</h2>
@@ -197,7 +205,10 @@ const BookingDetailsPage = () => {
       )}
 
       {/* Map */}
-      <div id="map" style={{ height: "300px", width: "300px", marginBottom: "20px" }}></div>
+      <div
+        id="map"
+        style={{ height: "300px", width: "300px", marginBottom: "20px" }}
+      ></div>
 
       {/* Buttons */}
       <div className="flex gap-4">
