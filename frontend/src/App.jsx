@@ -9,9 +9,10 @@ import AdminAddAttraction from "./pages/AdminAddAttraction";
 import AdminViewAttraction from "./pages/AdminViewAttraction";
 import SitesPage from "./pages/SitesPage";
 import SiteFound from "./pages/SiteFound";
-import HotelsPage from "./pages/HotelsPage";
+import AdminHotelView from "./pages/AdminHotelView";
 import AdminLogin from "./pages/LoginPage";
 import AdminHome from "./pages/AdminHome";
+
 
 const App = () => {
   
@@ -31,7 +32,9 @@ const App = () => {
       <Route path="/admin/home" element={<AdminHome/>}/> 
 
       <Route path="/showsite" element={<SiteFound/>}/>
-      <Route path="/hotelview" element={<HotelsPage/>}/>
+      <Route path="/admin/hotelview" element={<AdminHotelView/>}/>
+
+      
     </Routes>
   );
 };

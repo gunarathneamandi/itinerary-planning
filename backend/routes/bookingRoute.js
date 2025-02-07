@@ -82,4 +82,15 @@ router.get("/hotels/:attractionId", async (req, res) => {
   }
 });
 
+// Route to fetch all hotels
+router.get("/hotels", async (req, res) => {
+  try {
+    const hotels = await Hotel.find();
+    res.status(200).json(hotels);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+
 export default router;
